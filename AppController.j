@@ -7,33 +7,92 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "highlight_t_e.j"
+@import "view_with_calayer.j"
 
+var highlightElement = nil;
+var affineExampleView = nil;
 
 @implementation AppController : CPObject
 {
+  CPView contentView;
+  CPTextField rotateValue;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView];
+  var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
+  contentView = [theWindow contentView];
 
-    var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+  highlightElement = [[HighlightTE alloc] init];
 
-    [label setStringValue:@"Hello World!"];
-    [label setFont:[CPFont boldSystemFontOfSize:24.0]];
+  var rect = CGRectInset([contentView bounds], 200, 200 );
+  affineExampleView = [[ViewWithCalayer alloc] initWithFrame:rect
+                                              highlightElement:highlightElement];
+  [affineExampleView setFrameOrigin:CGPointMake( 100,100 )];
+  [affineExampleView redisplay];
+  [affineExampleView setNeedsDisplay:YES];
+  [affineExampleView setRotationDegrees:[highlightElement rotation]];
+  [contentView addSubview:affineExampleView];
+  
+  rotateValue = [CPTextField labelWithTitle:"0"];
+  [rotateValue setFrameOrigin:CGPointMake(200, 50)];
+  [contentView addSubview:rotateValue];
 
-    [label sizeToFit];
+  [self addButton:"Rotate" 
+         position:CGPointMake( 20, 20 ) 
+         selector:@selector(rotateAction:)];
 
-    [label setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
-    [label setCenter:[contentView center]];
+  [self addButton:"Change Color" 
+         position:CGPointMake( 20, 50 ) 
+         selector:@selector(changeColor:)];
 
-    [contentView addSubview:label];
+  [self addButton:"Rotate - Zero" 
+         position:CGPointMake( 150, 20 ) 
+         selector:@selector(rotateToZero:)];
+  [theWindow orderFront:self];
+}
 
-    [theWindow orderFront:self];
+- (void)addButton:(CPString)aTitle 
+         position:(Point)aPoint 
+         selector:(SEL)actionToTake
+{
+  var button = [CPButton buttonWithTitle:aTitle];
+  [button setTarget:self];
+  [button setAction:actionToTake];
+  [button setFrameOrigin:aPoint];
+  [contentView addSubview:button];
+  return button;
+}
 
-    // Uncomment the following line to turn on the standard menu bar.
-    //[CPMenu setMenuBarVisible:YES];
+-(void)rotateToZero:(id)sender
+{
+  [highlightElement setRotation:0];
+  [affineExampleView updateRotation];
+  [affineExampleView redisplay];
+  [rotateValue setStringValue:[CPString stringWithFormat:"Rotate: %d degs",
+                                        [highlightElement rotation]]];
+  [rotateValue sizeToFit];
+}
+
+-(void)rotateAction:(id)sender
+{
+  [highlightElement setRotation:[highlightElement rotation] + 1];
+  [rotateValue setStringValue:[CPString stringWithFormat:"Rotate: %d degs",
+                                        [highlightElement rotation]]];
+  [rotateValue sizeToFit];
+  [affineExampleView updateRotation];
+  [affineExampleView redisplay];
+}
+
+-(void)changeColor:(id)sender
+{
+  if ( [highlightElement color] === [CPColor redColor] ) {
+    [highlightElement setColor:[CPColor blueColor]];
+  } else {
+    [highlightElement setColor:[CPColor redColor]];
+  }
+  [affineExampleView redisplay];
 }
 
 @end
