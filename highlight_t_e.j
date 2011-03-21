@@ -16,7 +16,7 @@
   self = [super init];
   if ( self ) {
     m_color = [CPColor redColor];
-    m_show_as_border = 1;
+    m_show_as_border = 0;
     m_border_width = 30;
     m_rotation = 0;
 

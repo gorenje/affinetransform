@@ -10,6 +10,10 @@
 @import "highlight_t_e.j"
 @import "view_with_calayer.j"
 
+@import "c_a_layer_overriden.j"
+@import "CGContextCanvas.j"
+
+
 var highlightElement = nil;
 var affineExampleView = nil;
 
