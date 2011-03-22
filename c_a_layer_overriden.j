@@ -13,7 +13,7 @@ var CALayerGeometryBoundsMask                   = 1,
 
 function _CALayerRecalculateGeometry(aLayer, aGeometryChange)
 {
-  CPLogConsole( "Override of recalculate" );
+  CPLogConsole( "==> Override of recalculate" );
     var bounds = aLayer._bounds,
         superlayer = aLayer._superlayer,
         width = CGRectGetWidth(bounds),
@@ -24,10 +24,10 @@ function _CALayerRecalculateGeometry(aLayer, aGeometryChange)
         backingStoreFrameSize = CGSizeMakeCopy(aLayer._backingStoreFrame),
         hasCustomBackingStoreFrame = aLayer._hasCustomBackingStoreFrame;
 
-    CPLogConsole("Anchorpoint: " + anchorPoint.x + ", " + anchorPoint.y);
     // Go to anchor, transform, go back to bounds.
     aLayer._transformFromLayer =  CGAffineTransformConcat(
-        CGAffineTransformMakeTranslation(-width * anchorPoint.x - CGRectGetMinX(aLayer._bounds), -height * anchorPoint.y - CGRectGetMinY(aLayer._bounds)),
+        CGAffineTransformMakeTranslation(-width * anchorPoint.x - CGRectGetMinX(aLayer._bounds), 
+                                         -height * anchorPoint.y - CGRectGetMinY(aLayer._bounds)),
         CGAffineTransformConcat(affineTransform,
         CGAffineTransformMakeTranslation(position.x, position.y)));
 
@@ -49,9 +49,6 @@ function _CALayerRecalculateGeometry(aLayer, aGeometryChange)
     {
         var bounds = [superlayer bounds],
             frame = [superlayer convertRect:bounds toLayer:nil];
-
-      CPLogConsole( "Super Layer has bounds: " + rectToString(bounds));
-      CPLogConsole( "Super Layer has frame: " + rectToString(frame));
 
         aLayer._standardBackingStoreFrame.origin.x -= CGRectGetMinX(frame);
         aLayer._standardBackingStoreFrame.origin.y -= CGRectGetMinY(frame);
@@ -102,16 +99,14 @@ function _CALayerRecalculateGeometry(aLayer, aGeometryChange)
     // no re-rendering.
     else if (hasCustomBackingStoreFrame || (aGeometryChange & ~(CALayerGeometryPositionMask | CALayerGeometryAnchorPointMask))) {
       CPLogConsole( "SETNEEDS COMPOSITE" );
-        [aLayer setNeedsComposite];
+      [aLayer setNeedsComposite];
     }
-
+    
     var sublayers = aLayer._sublayers,
         index = 0,
         count = sublayers.length;
 
-    CPLogConsole( "SUblayer count: " + count );
     for (; index < count; ++index) {
-      CPLogConsole( "SUblayer count: " + index );
         _CALayerRecalculateGeometry(sublayers[index], aGeometryChange);
     }
 }
@@ -123,32 +118,33 @@ function rectToString(rect) {
 
 @implementation CALayer (Override)
 
-- (void)setAffineTransform:(CGAffineTransform)anAffineTransform
+- (void)composite
 {
-  CPLogConsole( "AffineTransform override" );
-    if (CGAffineTransformEqualToTransform(_affineTransform, anAffineTransform))
-        return;
+  CPLogConsole("composite is overriden");
 
-    _affineTransform = CGAffineTransformMakeCopy(anAffineTransform);
+    CGContextClearRect(_context, CGRectMake(0.0, 0.0, CGRectGetWidth(_backingStoreFrame), CGRectGetHeight(_backingStoreFrame)));
 
-    _CALayerRecalculateGeometry(self, 8);
-}
+    // Recomposite
+    var transform = CGAffineTransformCreateCopy(_transformFromLayer);
 
-- (void)drawInContext:(CGContext)aContext
-{   //if (!window.loop || window.nodisplay) CPLog.error("htiasd");
-  CPLogConsole( "drawInContext override" );
-    if (_backgroundColor)
+    if (_superlayer)
     {
-      CPLogConsole( "[DRAW IN CONTEXT] Drawing background color");
-      CGContextSetFillColor(aContext, _backgroundColor);
-        CGContextFillRect(aContext, _bounds);
+        var superlayerTransform = _CALayerGetTransform(_superlayer, nil),
+            superlayerOrigin = CGPointApplyAffineTransform(_superlayer._bounds.origin, superlayerTransform);
+
+        transform = CGAffineTransformConcat(transform, superlayerTransform);
+
+        transform.tx -= superlayerOrigin.x;
+        transform.ty -= superlayerOrigin.y;
     }
 
-    if (_delegateRespondsToDrawLayerInContextSelector)
-        [_delegate drawLayer:self inContext:aContext];
+    transform.tx -= CGRectGetMinX(_backingStoreFrame);
+    transform.ty -= CGRectGetMinY(_backingStoreFrame);
 
-    CPLogConsole( "[OWNING VIEW] Bounds: " + rectToString( [_owningView bounds] ) );
-    CPLogConsole( "[SELF] Bounds: " + rectToString( [self bounds] ) );
+    CGContextSaveGState(_context);
+    CGContextConcatCTM(_context, transform);//_transformFromView);
+    [self drawInContext:_context];
+    CGContextRestoreGState(_context);
 }
 
 @end

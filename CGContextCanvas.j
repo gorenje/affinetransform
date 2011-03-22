@@ -37,13 +37,10 @@ function CGContextAddArcToPointCanvas(aContext, x1, y1, x2, y2, radius) {
   aContext.arcTo(x1, y1, x2, y2, radius);
 }
 function CGContextAddCurveToPointCanvas(aContext, cp1x, cp1y, cp2x, cp2y, x, y) {
-  CPLogConsole( "CurveTpPooint: " + cp1x + ", " + cp1y + ", " + x + ", " + y + 
-                ", " + cp2x + ", " + cp2y);
   aContext.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
 }
 
 function CGContextAddQuadCurveToPointCanvas(aContext, cpx, cpy, x, y) {
-  CPLogConsole( "QuadCurve: " + cpx + ", " + cpy + ", " + x + ", " + y );
   aContext.quadraticCurveTo(cpx, cpy, x, y);
 }
 function CGContextAddLineToPointCanvas(aContext, x, y) { aContext.lineTo(x, y); }
@@ -56,7 +53,6 @@ function CGContextAddRectCanvas(aContext, aRect) {
 }
 function CGContextBeginPathCanvas(aContext) { aContext.beginPath(); }
 function CGContextFillRectCanvas(aContext, aRect) {
-  CPLogConsole( "[CGCONTEXT] Drawing rectangel: " + rectToString(aRect) );
   aContext.fillRect(CGRectGetMinX(aRect), CGRectGetMinY(aRect), 
                     CGRectGetWidth(aRect), CGRectGetHeight(aRect)); 
 }
@@ -123,7 +119,6 @@ function CGContextAddLineToPoint(aContext, x, y)
 
 function CGContextAddPath(aContext, aPath)
 {
-  CPLogConsole( "Adding path to the context (cnt) : " + aPath.count );
     if (!aContext || CGPathIsEmpty(aPath))
         return;
 
@@ -137,7 +132,6 @@ function CGContextAddPath(aContext, aPath)
         var element = elements[i],
             type = element.type;
 
-        CPLogConsole( "Elem: " + i + " : " + element.x + ", " + element.y + " type: " + type);
         switch (type)
         {
             case kCGPathElementMoveToPoint:         CGContextMoveToPointCanvas(aContext, element.x, element.y);
@@ -338,7 +332,7 @@ CGContextConcatCTM = function(aContext, anAffineTransform)
   CPLogConsole("  d : " + anAffineTransform.d);
   CPLogConsole(" *BUG* tx : " + anAffineTransform.tx);
   CPLogConsole(" *BUG* ty : " + anAffineTransform.ty);
-    aContext.transform(anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty);
+  aContext.transform(anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty);
 }
 
 }

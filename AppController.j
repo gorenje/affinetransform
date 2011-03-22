@@ -33,7 +33,7 @@ var affineExampleView = nil;
   var rect = CGRectInset([contentView bounds], 200, 200 );
   affineExampleView = [[ViewWithCalayer alloc] initWithFrame:rect
                                               highlightElement:highlightElement];
-  [affineExampleView setFrameOrigin:CGPointMake( 100,100 )];
+  [affineExampleView setFrameOrigin:CGPointMake( 150,150 )];
   [affineExampleView redisplay];
   [affineExampleView setNeedsDisplay:YES];
   [affineExampleView setRotationDegrees:[highlightElement rotation]];
