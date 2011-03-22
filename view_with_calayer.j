@@ -35,18 +35,14 @@
   var radians = ( aDegreeValue * (Math.PI / 180) );
   if (m_rotationRadians === radians) return;
   m_rotationRadians = radians;
-  CPLogConsole( "==> setRotationDegree Setting affine transform");
   [m_rootLayer setAffineTransform:CGAffineTransformMakeRotation(m_rotationRadians)];
-  CPLogConsole( "AfTr: " + CPStringFromCGAffineTransform([m_rootLayer affineTransform]));
 }
 
 - (void)drawLayer:(CALayer)aLayer inContext:(CGContext)aContext
 {
-  CPLogConsole("[**[DrawLayer]**]");
   var bounds = [aLayer bounds];
   CGContextSetFillColor(aContext, [m_highlightElement getColor]);
   CGContextSetStrokeColor(aContext, [m_highlightElement getColor]);
-  CPLogConsole( "About to fill ellipse" );
   CGContextFillEllipseInRect(aContext, bounds);
 }
 
